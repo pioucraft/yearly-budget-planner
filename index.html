@@ -89,12 +89,12 @@
 
         <div class="input-group">
             <label for="weekly-allowance">Weekly Allowance:</label>
-            <input type="number" id="weekly-allowance" step="0.01">
+            <input type="text" id="weekly-allowance" placeholder="e.g., 50 +20">
         </div>
 
         <div class="input-group">
             <label for="num-of-weeks">Total Number of Weeks (in a Year):</label>
-            <input type="number" id="num-of-weeks" value="52">
+            <input type="text" id="num-of-weeks" value="52" placeholder="e.g., 52 -10">
         </div>
 
         <div class="input-group">
@@ -104,12 +104,12 @@
 
         <div class="input-group">
             <label for="expense-amount">Recurring Expense Amount:</label>
-            <input type="number" id="expense-amount" step="0.01">
+            <input type="text" id="expense-amount" placeholder="e.g., 100 +50">
         </div>
 
         <div class="input-group">
             <label for="expense-weeks">Number of Weeks for Recurring Expense:</label>
-            <input type="number" id="expense-weeks" min="1" max="52">
+            <input type="text" id="expense-weeks" placeholder="e.g., 10 -2">
         </div>
 
         <button onclick="addRecurringExpense()">Add Recurring Expense</button>
@@ -126,7 +126,7 @@
 
         <div class="input-group">
             <label for="one-time-amount">One-Time Expense Amount:</label>
-            <input type="number" id="one-time-amount" step="0.01">
+            <input type="text" id="one-time-amount" placeholder="e.g., 500 -100">
         </div>
 
         <button onclick="addOneTimeExpense()">Add One-Time Expense</button>
@@ -153,10 +153,22 @@
         let totalRecurringExpenses = 0;
         let totalOneTimeExpenses = 0;
 
+        function evaluateExpression(expression) {
+            try {
+                return Function(`'use strict'; return (${expression})`)();
+            } catch (error) {
+                alert('Invalid expression: ' + expression);
+                return 0;
+            }
+        }
+
         function addRecurringExpense() {
             const description = document.getElementById('expense-description').value;
-            const amount = parseFloat(document.getElementById('expense-amount').value) || 0;
-            const weeks = parseInt(document.getElementById('expense-weeks').value) || 0;
+            const amountStr = document.getElementById('expense-amount').value;
+            const weeksStr = document.getElementById('expense-weeks').value;
+
+            const amount = evaluateExpression(amountStr);
+            const weeks = evaluateExpression(weeksStr);
 
             if (!description || amount <= 0 || weeks <= 0) {
                 alert('Please provide valid description, amount, and number of weeks.');
@@ -168,7 +180,7 @@
 
             const list = document.getElementById('recurring-list');
             const listItem = document.createElement('li');
-            listItem.textContent = `${description}: $${amount.toFixed(2)} × ${weeks} weeks = $${totalExpense.toFixed(2)}`;
+            listItem.textContent = `${description}: $${amountStr} × ${weeksStr} = $${totalExpense.toFixed(2)}`;
             list.appendChild(listItem);
 
             // Reset input fields
@@ -179,7 +191,9 @@
 
         function addOneTimeExpense() {
             const description = document.getElementById('one-time-description').value;
-            const amount = parseFloat(document.getElementById('one-time-amount').value) || 0;
+            const amountStr = document.getElementById('one-time-amount').value;
+
+            const amount = evaluateExpression(amountStr);
 
             if (!description || amount <= 0) {
                 alert('Please provide a valid description and amount.');
@@ -190,7 +204,7 @@
 
             const list = document.getElementById('one-time-list');
             const listItem = document.createElement('li');
-            listItem.textContent = `${description}: $${amount.toFixed(2)}`;
+            listItem.textContent = `${description}: $${amountStr}`;
             list.appendChild(listItem);
 
             // Reset input fields
@@ -200,8 +214,11 @@
 
         function calculateBudget() {
             try {
-                const weeklyAllowance = parseFloat(document.getElementById('weekly-allowance').value) || 0;
-                const numOfWeeks = parseInt(document.getElementById('num-of-weeks').value) || 52;
+                const weeklyAllowanceStr = document.getElementById('weekly-allowance').value;
+                const numOfWeeksStr = document.getElementById('num-of-weeks').value;
+
+                const weeklyAllowance = evaluateExpression(weeklyAllowanceStr);
+                const numOfWeeks = evaluateExpression(numOfWeeksStr);
 
                 // Calculate total income
                 const totalIncome = weeklyAllowance * numOfWeeks;
@@ -215,7 +232,7 @@
                 // Create equation display
                 const equationDisplay = document.getElementById('equation');
                 equationDisplay.innerHTML = `
-                    <div class="equation-step">Total Income: (Money Received/Week × Weeks) = $${weeklyAllowance.toFixed(2)} × ${numOfWeeks} = $${totalIncome.toFixed(2)}</div>
+                    <div class="equation-step">Total Income: (Money Received/Week × Weeks) = $${weeklyAllowanceStr} × ${numOfWeeksStr} = $${totalIncome.toFixed(2)}</div>
                     <div class="equation-step">Total Recurring Expenses: $${totalRecurringExpenses.toFixed(2)}</div>
                     <div class="equation-step">Total One-Time Expenses: $${totalOneTimeExpenses.toFixed(2)}</div>
                     <div class="equation-step">Total Spending: $${totalRecurringExpenses.toFixed(2)} + $${totalOneTimeExpenses.toFixed(2)} = $${totalSpending.toFixed(2)}</div>
