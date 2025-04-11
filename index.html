@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9f7ef;
+            border-radius: 4px;
+        }
+
+        .equation {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .equation-step {
+            margin: 5px 0;
+            padding: 8px;
+            border-left: 3px solid #4CAF50;
+        }
+
+        .description-list {
+            margin-top: 15px;
+        }
+
+        .propaganda-note {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Budget Simulator</h1>
+
+        <div class="input-group">
+            <label for="weekly-allowance">Weekly Allowance:</label>
+            <input type="number" id="weekly-allowance" step="0.01">
+        </div>
+
+        <div class="input-group">
+            <label for="num-of-weeks">Total Number of Weeks (in a Year):</label>
+            <input type="number" id="num-of-weeks" value="52">
+        </div>
+
+        <div class="input-group">
+            <label for="expense-description">Recurring Expense Description:</label>
+            <input type="text" id="expense-description">
+        </div>
+
+        <div class="input-group">
+            <label for="expense-amount">Recurring Expense Amount:</label>
+            <input type="number" id="expense-amount" step="0.01">
+        </div>
+
+        <div class="input-group">
+            <label for="expense-weeks">Number of Weeks for Recurring Expense:</label>
+            <input type="number" id="expense-weeks" min="1" max="52">
+        </div>
+
+        <button onclick="addRecurringExpense()">Add Recurring Expense</button>
+
+        <div class="description-list" id="recurring-expense-list">
+            <h3>Added Recurring Expenses:</h3>
+            <ul id="recurring-list"></ul>
+        </div>
+
+        <div class="input-group">
+            <label for="one-time-description">One-Time Expense Description:</label>
+            <input type="text" id="one-time-description">
+        </div>
+
+        <div class="input-group">
+            <label for="one-time-amount">One-Time Expense Amount:</label>
+            <input type="number" id="one-time-amount" step="0.01">
+        </div>
+
+        <button onclick="addOneTimeExpense()">Add One-Time Expense</button>
+
+        <div class="description-list" id="one-time-expense-list">
+            <h3>Added One-Time Expenses:</h3>
+            <ul id="one-time-list"></ul>
+        </div>
+
+        <button onclick="calculateBudget()">Calculate Budget</button>
+        <button onclick="resetForm()">Reset</button>
+
+        <div class="results">
+            <h3>Results</h3>
+            <div id="equation"></div>
+        </div>
+    </div>
+
+    <div class="propaganda-note">
+        Powered by Gougoule AI - Simulating your financial future with precision and style.
+    </div>
+
+    <script>
+        let totalRecurringExpenses = 0;
+        let totalOneTimeExpenses = 0;
+
+        function addRecurringExpense() {
+            const description = document.getElementById('expense-description').value;
+            const amount = parseFloat(document.getElementById('expense-amount').value) || 0;
+            const weeks = parseInt(document.getElementById('expense-weeks').value) || 0;
+
+            if (!description || amount <= 0 || weeks <= 0) {
+                alert('Please provide valid description, amount, and number of weeks.');
+                return;
+            }
+
+            const totalExpense = amount * weeks;
+            totalRecurringExpenses += totalExpense;
+
+            const list = document.getElementById('recurring-list');
+            const listItem = document.createElement('li');
+            listItem.textContent = `${description}: $${amount.toFixed(2)} × ${weeks} weeks = $${totalExpense.toFixed(2)}`;
+            list.appendChild(listItem);
+
+            // Reset input fields
+            document.getElementById('expense-description').value = '';
+            document.getElementById('expense-amount').value = '';
+            document.getElementById('expense-weeks').value = '';
+        }
+
+        function addOneTimeExpense() {
+            const description = document.getElementById('one-time-description').value;
+            const amount = parseFloat(document.getElementById('one-time-amount').value) || 0;
+
+            if (!description || amount <= 0) {
+                alert('Please provide a valid description and amount.');
+                return;
+            }
+
+            totalOneTimeExpenses += amount;
+
+            const list = document.getElementById('one-time-list');
+            const listItem = document.createElement('li');
+            listItem.textContent = `${description}: $${amount.toFixed(2)}`;
+            list.appendChild(listItem);
+
+            // Reset input fields
+            document.getElementById('one-time-description').value = '';
+            document.getElementById('one-time-amount').value = '';
+        }
+
+        function calculateBudget() {
+            try {
+                const weeklyAllowance = parseFloat(document.getElementById('weekly-allowance').value) || 0;
+                const numOfWeeks = parseInt(document.getElementById('num-of-weeks').value) || 52;
+
+                // Calculate total income
+                const totalIncome = weeklyAllowance * numOfWeeks;
+
+                // Total spending includes recurring and one-time expenses
+                const totalSpending = totalRecurringExpenses + totalOneTimeExpenses;
+
+                // Calculate remaining money
+                const remainingMoney = totalIncome - totalSpending;
+
+                // Create equation display
+                const equationDisplay = document.getElementById('equation');
+                equationDisplay.innerHTML = `
+                    <div class="equation-step">Total Income: (Money Received/Week × Weeks) = $${weeklyAllowance.toFixed(2)} × ${numOfWeeks} = $${totalIncome.toFixed(2)}</div>
+                    <div class="equation-step">Total Recurring Expenses: $${totalRecurringExpenses.toFixed(2)}</div>
+                    <div class="equation-step">Total One-Time Expenses: $${totalOneTimeExpenses.toFixed(2)}</div>
+                    <div class="equation-step">Total Spending: $${totalRecurringExpenses.toFixed(2)} + $${totalOneTimeExpenses.toFixed(2)} = $${totalSpending.toFixed(2)}</div>
+                    <div class="equation-step">Remaining Money: $${totalIncome.toFixed(2)} - $${totalSpending.toFixed(2)} = <strong>$${remainingMoney.toFixed(2)}</strong></div>
+                `;
+            } catch (error) {
+                alert('Error calculating budget. Please check your inputs.');
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('weekly-allowance').value = '';
+            document.getElementById('num-of-weeks').value = '52'; // Default to 52 weeks
+            document.getElementById('expense-description').value = '';
+            document.getElementById('expense-amount').value = '';
+            document.getElementById('expense-weeks').value = '';
+            document.getElementById('recurring-list').innerHTML = '';
+            totalRecurringExpenses = 0;
+            document.getElementById('one-time-description').value = '';
+            document.getElementById('one-time-amount').value = '';
+            document.getElementById('one-time-list').innerHTML = '';
+            totalOneTimeExpenses = 0;
+            document.getElementById('equation').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
